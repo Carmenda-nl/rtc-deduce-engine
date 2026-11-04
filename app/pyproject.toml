@@ -1,0 +1,84 @@
+[project]
+name = 'rtc-deduce-engine'
+dynamic = ['version']
+description = 'FastAPI based engine with a rtc modified deduce core'
+requires-python = '>=3.14'
+dependencies = [
+    'deduce>=3.0.6',
+    'fastapi[standard]>=0.136.1',
+    'fastexcel>=0.21.0',
+    'polars[pandas]>=1.38.1',
+    'rich>=14.3.2',
+    'xlsxwriter>=3.2.9',
+]
+
+[dependency-groups]
+build = [
+    'pyinstaller>=6.18.0',
+    'setuptools-scm>=9.2.2',
+]
+
+dev = [
+    'mypy>=1.19.1',
+    'pandas-stubs>=3.0.0.260204',
+    'pytest>=9.0.2',
+    'pytest-cov>=7.0.0',
+    'ruff>=0.15.0',
+]
+
+[tool.setuptools.packages.find]
+include = ['api*', 'core*', 'main*']
+
+[tool.setuptools.dynamic]
+version = { file = 'main/VERSION' }
+
+[tool.uv]
+package = false
+required-version = '>=0.11.2'
+override-dependencies = ['regex>=2026.2.19']
+
+[tool.fastapi]
+entrypoint = 'run:app'
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ['ALL']
+ignore = [
+    'SLF001',  # (MEIPASS use for PyInstaller)
+    'S101',    # (False positives when using with pytest)
+    'S301',    # (Pickle file loading)
+    'COM812',  # (Conflicts with ruff formatter)
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = 'google'
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = 'single'
+
+[tool.ruff.format]
+quote-style = 'single'
+
+[tool.coverage.run]
+data_file = 'pytest/.coverage'
+
+[tool.coverage.html]
+directory = 'pytest/html'
+
+[tool.coverage.xml]
+output = 'pytest/coverage.xml'
+
+[tool.pytest.ini_options]
+python_files = ['tests.py', 'test_*.py', '*_tests.py']
+cache_dir = 'pytest/.pytest_cache'
+addopts = [
+    '--cov=.',
+    '--cov-report=term:skip-covered',
+    '--cov-report=html',
+    '--cov-report=xml',
+    '--cov-fail-under=25',
+    '-p',
+    'no:warnings'
+]
