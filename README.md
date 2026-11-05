@@ -1,6 +1,6 @@
 # RTC Deduce engine
 
-[![Python](https://img.shields.io/badge/python-3.15-blue)](https://www.python.org/downloads/)
+[![Python](https://img.shields.io/badge/python-3.14-blue)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.141-009688)](https://fastapi.tiangolo.com/)
 [![Polars](https://img.shields.io/badge/polars-1.44-9cf)](https://pola.rs/)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
