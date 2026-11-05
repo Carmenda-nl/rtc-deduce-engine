@@ -19,7 +19,6 @@ import tempfile
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import cast
 
 import deduce
 
@@ -34,7 +33,6 @@ class DeduceInstanceManager:
     def __init__(self, lookup_data_path: str | None = None) -> None:
         """Initialize the Deduce instance manager."""
         self.lookup_data_path = self._resolve_lookup_path(lookup_data_path)
-        self.deduce_instance = None
 
     def _resolve_lookup_path(self, provided_path: str | None) -> str | None:
         """Resolve the lookup tables path in order of priority."""
@@ -66,8 +64,7 @@ class DeduceInstanceManager:
         self._cleanup_temp_directory()
 
         if not self.lookup_data_path:
-            self.deduce_instance = deduce.Deduce()
-            return self.deduce_instance
+            return deduce.Deduce()
 
         cache_path = Path(self.lookup_data_path)
         lookup_structs_file = cache_path / 'cache' / 'lookup_structs.pickle'
@@ -76,11 +73,9 @@ class DeduceInstanceManager:
 
         # For frozen, use temp directory approach to avoid path issues
         if hasattr(sys, '_MEIPASS') and lookup_structs_file.exists():
-            self.deduce_instance = self._create_frozen_instance(cache_path)
-            return self.deduce_instance
+            return self._create_frozen_instance(cache_path)
 
-        self.deduce_instance = deduce.Deduce(lookup_data_path=self.lookup_data_path, cache_path=cache_path)
-        return self.deduce_instance
+        return deduce.Deduce(lookup_data_path=self.lookup_data_path, cache_path=cache_path)
 
     def _cleanup_temp_directory(self) -> None:
         """Remove stale deduce_lookup folder before initializing Deduce."""
@@ -202,33 +197,3 @@ class DeduceInstanceManager:
         cache_file_path = temp_lookup_path / 'cache' / 'lookup_structs.pickle'
         if cache_file_path.exists():
             os.utime(cache_file_path, (current_time, current_time))
-
-    def load_lookup_tables(self) -> dict[str, set[str]]:
-        """Load lookup tables based on the configured paths."""
-        if self.lookup_data_path:
-            base_path = Path(self.lookup_data_path) / 'src' / 'names'
-            whitelist_path = Path(self.lookup_data_path) / 'src' / 'whitelist'
-        else:
-            deduce_lookup = Path(cast('deduce.Deduce', self.deduce_instance).lookup_data_path)
-            base_path = deduce_lookup / 'src' / 'names'
-            whitelist_path = deduce_lookup / 'src' / 'whitelist'
-
-        lookup_files = {
-            'first_names': base_path / 'lst_first_name' / 'items.txt',
-            'surnames': base_path / 'lst_surname' / 'items.txt',
-            'interfix_surnames': base_path / 'lst_interfix_surname' / 'items.txt',
-            'name_prefixes': base_path / 'lst_prefix' / 'items.txt',
-            'interfixes': base_path / 'lst_interfix' / 'items.txt',
-            'common_words': whitelist_path / 'lst_common_word' / 'items.txt',
-            'stop_words': whitelist_path / 'lst_stop_word' / 'items.txt',
-        }
-
-        def load_word_set(path: Path) -> set[str]:
-            """Convert lookup table words into a lowercase set."""
-            if path.exists():
-                with path.open(encoding='utf-8') as lookup_file:
-                    # Skip empty lines, strip whitespace & lowercase
-                    return {clean.lower() for line in lookup_file if (clean := line.strip())}
-            return set()
-
-        return {attr: load_word_set(file_path) for attr, file_path in lookup_files.items()}

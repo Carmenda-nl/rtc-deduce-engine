@@ -16,7 +16,6 @@ import polars as pl
 from deduce.person import Person  # type: ignore[import-untyped]
 
 from core.deduce.instance import DeduceInstanceManager
-from core.deduce.name_detector import DutchNameDetector, NameAnnotation
 from core.utils.logger import setup_logging
 from core.utils.terminal import colorize_tags, log_block
 
@@ -29,13 +28,9 @@ logger = setup_logging()
 
 
 @cache
-def load_models() -> tuple[deduce.Deduce, dict[str, set[str]], DutchNameDetector]:
-    """Load Deduce, the lookup tables and the name detector once per engine process."""
-    deduce_manager = DeduceInstanceManager()
-    deduce_instance = deduce_manager.create_instance()
-    lookup_sets = deduce_manager.load_lookup_tables()
-
-    return deduce_instance, lookup_sets, DutchNameDetector(lookup_sets)
+def load_models() -> deduce.Deduce:
+    """Load Deduce (with its lookup tables) once per engine process."""
+    return DeduceInstanceManager().create_instance()
 
 
 class DeduceHandler:
@@ -46,11 +41,10 @@ class DeduceHandler:
         self.tracker = tracker
 
         self.tracker.set_progress('init_model')
-        self.deduce_instance, self.lookup_sets, self.name_detection = load_models()
+        self.deduce_instance = load_models()
 
         # For debug logging of de-identification results
         self.processed_reports: list[dict[str, str]] = []
-        self.total_processed = 0
 
         # Progress tracking (progress bar)
         self.processed_count = 0
@@ -112,45 +106,17 @@ class DeduceHandler:
         result = self.deduce_instance.deidentify(preprocessed_text, metadata=metadata)
         return result.deidentified_text
 
-    def _merge_detections(self, report_text: str, deduce_result: str, extend_result: list[NameAnnotation]) -> str:
-        """Merge Deduce and custom detections."""
-        result_text = deduce_result
-        missed_detections = []
-
-        for detection in extend_result:
-            original_segment = report_text[detection.start : detection.end]
-            if original_segment.lower() in result_text.lower():
-                missed_detections.append(detection)
-
-        # Count existing [PERSOON-X] tags in text
-        person_counter = len(re.findall(r'\[PERSOON-\d+\]', result_text)) + 1
-
-        for detection in sorted(missed_detections, key=lambda detect: detect.start):
-            name_to_replace = report_text[detection.start : detection.end]
-            pattern = re.escape(name_to_replace)
-            replacement = f'[PERSOON-{person_counter}]'
-            new_text = re.sub(pattern, replacement, result_text, count=1, flags=re.IGNORECASE)
-
-            if new_text != result_text:
-                result_text = new_text
-                person_counter += 1
-
-        return result_text
-
     def _process_report(self, report_text: str, clientname: str | None = None) -> str:
         """Process a single report (row) with or without clientname."""
         if report_text is None or not isinstance(report_text, str):
             return ''  # <-- Return empty text if not a valid string.
 
         deduce_result = self._deduce_detection(report_text, clientname)
-        extend_result = self.name_detection.names_case_insensitive(report_text)
-        merged_result = self._merge_detections(report_text, deduce_result, extend_result)
 
         if logger.level == logging.DEBUG:
-            self.total_processed += 1
-            self.processed_reports.append({'report': report_text, 'deduce': deduce_result, 'merged': merged_result})
+            self.processed_reports.append({'report': report_text, 'deduce': deduce_result})
 
-        return merged_result
+        return deduce_result
 
     def _deidentify_batch(self, batch: pl.Series, **_kwargs: object) -> pl.Series:
         """Collect a batch of report texts and process them per row, while tracking progress."""
@@ -258,6 +224,5 @@ class DeduceHandler:
             sections = {
                 'ORIGINAL': colorize_tags(rule['report']),
                 'DEDUCE': colorize_tags(rule['deduce']),
-                'EXTENDED': colorize_tags(rule['merged']),
             }
             log_block(title, sections)
