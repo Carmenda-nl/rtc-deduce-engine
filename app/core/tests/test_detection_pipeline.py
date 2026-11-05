@@ -69,14 +69,7 @@ def test_name_detection_pipeline() -> None:
         logger.info("  Input:   '%s'", row['report'])
         logger.info("  Output:  '%s'\n", row['processed_report_1'])
 
-        # Show what the detector alone would find for comparison
-        custom_annotations = handler.name_detection.names_case_insensitive(row['report'])
-        if custom_annotations:
-            logger.info('  Detector found:')
-            for ann in custom_annotations:
-                logger.info("    '%s' at %d-%d (confidence: %.2f)", ann.text, ann.start, ann.end, ann.confidence)
-        else:
-            logger.info('    Detector found no additional names')
+        assert row['processed_report_1'].startswith('[PATIENT]')
 
     logger.info('\n%s', get_separator_line())
 
