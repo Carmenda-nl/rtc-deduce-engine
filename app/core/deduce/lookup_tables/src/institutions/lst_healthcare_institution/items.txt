@@ -26,6 +26,7 @@
 't Bolleke, Praktijk voor Verloskunde en Echografie
 't Bolwerk
 't Centrum Fysiotherapie en Oedeemtherapie
+'t Gastenhuis
 't Gebittenhuys
 't Haagsch Geboortehuys
 't Hart Verloskunde
@@ -15481,6 +15482,7 @@ Galerij apotheek
 Gamma Knife Centrum Tilburg
 Gardeslen Orthopaedie
 Garritsen Thuiszorg
+Gastenhuis
 Gasterij Bergerbaan
 Gasthuis Groningen
 Gasthuis Hoogezand-Sappemeer

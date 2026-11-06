@@ -20,6 +20,7 @@ klein
 komen
 kort
 los
+lot
 min
 oost
 papa

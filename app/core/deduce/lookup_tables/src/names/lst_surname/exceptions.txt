@@ -30,6 +30,7 @@ Buren
 Dag
 Dame
 Dik
+Dikker
 Do
 Dokter
 Donker
@@ -122,6 +123,7 @@ Sliep
 Snel
 Snel
 Sneller
+Splinter
 Staat
 Stel
 Sterk

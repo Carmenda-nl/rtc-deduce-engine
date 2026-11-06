@@ -169,6 +169,7 @@ Signe
 Sint
 Sla
 Son
+Splinter
 Sri
 Sun
 Swan
