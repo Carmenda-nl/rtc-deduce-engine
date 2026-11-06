@@ -1,0 +1,21 @@
+{
+  "annotators": {
+    "age": {
+      "args": {
+        "post_pseudo": [
+          "aanwezig",
+          "gebruikt",
+          "geleden",
+          "gerookt",
+          "gestaakt",
+          "gestopt",
+          "getrouwd",
+          "na",
+          "naar",
+          "nadien",
+          "gld"
+        ]
+      }
+    }
+  }
+}

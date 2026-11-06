@@ -60,7 +60,14 @@ class DeduceInstanceManager:
         return None
 
     def create_instance(self) -> deduce.Deduce:
-        """Create a configured Deduce instance with lookup data."""
+        """Create a configured Deduce instance with lookup additions."""
+        instance = self._create_deduce()
+        # "CWZ" is too short for lst_healthcare_institution (Deduce drops entries under 4 characters)
+        instance.lookup_structs['healthcare_institution'].add_item(['CWZ'])
+        return instance
+
+    def _create_deduce(self) -> deduce.Deduce:
+        """Create a Deduce instance with lookup data and config overrides."""
         self._cleanup_temp_directory()
 
         if not self.lookup_data_path:
@@ -75,7 +82,11 @@ class DeduceInstanceManager:
         if hasattr(sys, '_MEIPASS') and lookup_structs_file.exists():
             return self._create_frozen_instance(cache_path)
 
-        return deduce.Deduce(lookup_data_path=self.lookup_data_path, cache_path=cache_path)
+        return deduce.Deduce(
+            lookup_data_path=self.lookup_data_path,
+            cache_path=cache_path,
+            config=str(cache_path / 'deduce_config.json'),
+        )
 
     def _cleanup_temp_directory(self) -> None:
         """Remove stale deduce_lookup folder before initializing Deduce."""
@@ -111,6 +122,7 @@ class DeduceInstanceManager:
                 lookup_data_path=str(temp_lookup_path),
                 cache_path=temp_lookup_path,
                 build_lookup_structs=False,
+                config=str(cache_path / 'deduce_config.json'),
             )
 
         except (OSError, shutil.Error) as e:
@@ -121,6 +133,7 @@ class DeduceInstanceManager:
                 lookup_data_path=self.lookup_data_path,
                 cache_path=cache_path,
                 build_lookup_structs=False,
+                config=str(cache_path / 'deduce_config.json'),
             )
 
     def _check_temp_setup_needed(self, temp_lookup_path: Path) -> bool:
