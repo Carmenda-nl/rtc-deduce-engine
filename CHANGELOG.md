@@ -3,6 +3,16 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1-beta] - 2026-11-23
+
+### Added
+
+- Write engine details in log [LVD-419]
+
+### Changed
+
+- Replace mypy typing with ty
+
 ## [1.0.0] - 2026-11-10
 
 ### Added
