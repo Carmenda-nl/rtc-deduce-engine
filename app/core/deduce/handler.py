@@ -104,7 +104,7 @@ class DeduceHandler:
             metadata['patient'] = client
 
         result = self.deduce_instance.deidentify(preprocessed_text, metadata=metadata)
-        return result.deidentified_text
+        return result.deidentified_text or ''
 
     def _process_report(self, report_text: str, clientname: str | None = None) -> str:
         """Process a single report (row) with or without clientname."""
